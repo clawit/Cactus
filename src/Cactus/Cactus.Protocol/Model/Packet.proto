@@ -1,0 +1,12 @@
+﻿syntax = "proto3";
+
+package Cactus.Protocol.Model;
+option csharp_namespace = "Cactus.Protocol.Model";
+
+message Packet{
+    string Service = 1;
+	string Command = 2;
+	repeated string Args = 3;
+	string Data = 4;
+	map<string, string> Options = 5;
+}

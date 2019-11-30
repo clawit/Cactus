@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cactus.Protocol", "Cactus.Protocol\Cactus.Protocol.csproj", "{DD459904-BA2B-4299-90E7-B941BEC60185}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DD459904-BA2B-4299-90E7-B941BEC60185}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD459904-BA2B-4299-90E7-B941BEC60185}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD459904-BA2B-4299-90E7-B941BEC60185}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD459904-BA2B-4299-90E7-B941BEC60185}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AF9581A9-38F4-4193-BC07-93C4250E7F73}
+	EndGlobalSection
+EndGlobal
