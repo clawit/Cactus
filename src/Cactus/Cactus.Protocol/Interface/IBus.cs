@@ -1,13 +1,15 @@
-﻿using System;
+﻿using Cactus.Protocol.Model;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Cactus.Protocol.Interface
 {
+    public delegate bool PacketProcessor(BusChannel channel, Packet packet);
     public interface IBus
     {
-        bool Publish();
+        bool Publish(BusChannel channel, Packet packet);
 
-        bool Subscribe();
+        bool Subscribe(BusChannel channel, PacketProcessor processor);
     }
 }
