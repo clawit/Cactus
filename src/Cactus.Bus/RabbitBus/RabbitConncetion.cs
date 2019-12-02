@@ -12,10 +12,10 @@ namespace Cactus.Bus.RabbitBus
     {
         public IModel Channel { get; set; }
 
-        public ConcurrentDictionary<BusChannel, List<PacketProcessor>> Subscribers { get; set; }
+        public ConcurrentDictionary<string, List<PacketProcessor>> Subscribers { get; set; }
     
+        public ConcurrentDictionary<string, ConcurrentQueue<Packet>> Queues { get; set; }
         public string ExchangeName { get; set; }
 
-        public IBasicConsumer Consumer { get; set; }
     }
 }

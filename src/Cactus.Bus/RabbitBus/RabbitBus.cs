@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Cactus.Bus.RabbitBus
@@ -16,13 +17,12 @@ namespace Cactus.Bus.RabbitBus
         private IConnection _conncetion = null;
         private IModel _channel = null;
         private IBasicProperties _properties = null;
-        private IBasicConsumer _consumer = null;
         private string _exchangeName = null;
         private bool _durable;
 
         private Task _dispatcherTask = null;
-        private ConcurrentDictionary<BusChannel, ConcurrentQueue<Packet>> _queues = new ConcurrentDictionary<BusChannel, ConcurrentQueue<Packet>>();
-        private ConcurrentDictionary<BusChannel, List<PacketProcessor>> _subscribers = new ConcurrentDictionary<BusChannel, List<PacketProcessor>>();
+        private ConcurrentDictionary<string, ConcurrentQueue<Packet>> _queues = new ConcurrentDictionary<string, ConcurrentQueue<Packet>>();
+        private ConcurrentDictionary<string, List<PacketProcessor>> _subscribers = new ConcurrentDictionary<string, List<PacketProcessor>>();
 
         /// <summary>
         /// 
@@ -46,13 +46,11 @@ namespace Cactus.Bus.RabbitBus
             _properties = _channel.CreateBasicProperties();
             _properties.Persistent = true;
 
-            _consumer = new EventingBasicConsumer(_channel);
-
             var rabbitConncetion = new RabbitConncetion();
             rabbitConncetion.Channel = _channel;
             rabbitConncetion.Subscribers = _subscribers;
             rabbitConncetion.ExchangeName = _exchangeName;
-            rabbitConncetion.Consumer = _consumer;
+            rabbitConncetion.Queues = _queues;
             _dispatcherTask = Task.Factory.StartNew(_dispatcher, rabbitConncetion);
         }
 
@@ -60,12 +58,16 @@ namespace Cactus.Bus.RabbitBus
         {
             try
             {
-                var body = packet.GetByteArray();
-                _channel.BasicPublish(_exchangeName, channel, false, _properties, body);
+                if (BindQueue(channel))
+                {
+                    var body = packet.GetByteArray();
+                    var router = $"{GetChannelName(_exchangeName, channel)}.{packet.Service}";
+                    _channel.BasicPublish(_exchangeName, router, false, _properties, body);
+                }
 
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
                 return false;
             }
@@ -77,14 +79,31 @@ namespace Cactus.Bus.RabbitBus
             {
                 string channelName = GetChannelName(_exchangeName, channel);
 
+                //queue
                 _queues.TryAdd(channelName, new ConcurrentQueue<Packet>());
+                var queue = _queues[channelName];
 
-                _subscribers.TryAdd(channelName, new List<PacketProcessor>());
-                var subscriber = _subscribers[channelName];
-                if (!subscriber.Contains(processor))
+                //processor
+                List<PacketProcessor> subscriber = null;
+                if (_subscribers.ContainsKey(channelName))
                 {
-                    subscriber.Add(processor);
+                    subscriber = _subscribers[channelName];
                 }
+                else
+                {
+                    subscriber = new List<PacketProcessor>();
+                }
+                AddProcessor2Subscriber(processor, subscriber);
+                _subscribers.TryAdd(channelName, subscriber);
+
+                //consumer
+                var consumer = new EventingBasicConsumer(_channel);
+                consumer.Received += (sender, args) =>
+                {
+                    var packet = args.Body.FromByteArray();
+                    queue.Enqueue(packet);
+                };
+                _channel.BasicConsume(channelName, true, consumer);
 
                 return true;
             }
@@ -101,13 +120,12 @@ namespace Cactus.Bus.RabbitBus
         }
         private bool BindQueue(string queueName)
         {
-            //新建Queue
-            _channel.QueueDeclare(queueName, _durable, false, false, null);
-            //绑定 queue 与exchange
             string channelName = GetChannelName(_exchangeName, queueName);
-            _channel.QueueBind(queueName, _exchangeName, channelName, null);
-            //绑定consumer
-            _channel.BasicConsume(channelName, false, _consumer);
+            //新建Queue
+            _channel.QueueDeclare(channelName, _durable, false, false, null);
+            //绑定 queue 与exchange
+            var router = $"{channelName}.*";
+            _channel.QueueBind(channelName, _exchangeName, router, null);
 
             return true;
         }
@@ -115,6 +133,14 @@ namespace Cactus.Bus.RabbitBus
         private static string GetChannelName(string exchangeName, string queueName)
         { 
             return $"{exchangeName}.{queueName}";
+        }
+
+        private static void AddProcessor2Subscriber(PacketProcessor processor, List<PacketProcessor> subscriber)
+        {
+            if (!subscriber.Contains(processor))
+            {
+                subscriber.Add(processor);
+            }
         }
 
         private static async Task _dispatcher(object param)
@@ -126,23 +152,26 @@ namespace Cactus.Bus.RabbitBus
                 {
                     foreach (var channel in rabbitConncetion.Subscribers.Keys)
                     {
-                        var channelName = GetChannelName(rabbitConncetion.ExchangeName, channel);
-                        rabbitConncetion.Channel.BasicConsume(channelName, false, rabbitConncetion.Consumer);
+                        var queue = rabbitConncetion.Queues[channel];
+                        var processors = rabbitConncetion.Subscribers[channel];
+                        if (queue!= null && processors != null 
+                            && !queue.IsEmpty)
+                        {
+                            queue.TryDequeue(out var packet);
+                            foreach (var processor in processors)
+                            {
+                                processor(channel, packet);
+                            }
+                        }
                     }
-                    
-                    await aaa();
                 }
                 catch (Exception ex)
                 {
                     //TODO:处理失败的消息
 
                 }
+                Thread.Sleep(0);
             }
-        }
-
-        public static async Task<bool> aaa()
-        {
-            return false;
         }
     }
 }
