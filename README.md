@@ -1,2 +1,2 @@
 # Cactus
-a bus middle-end for data
+Cactus is a data bus for middle-end
