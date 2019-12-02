@@ -20,8 +20,8 @@ namespace Cactus.Bus.RabbitBus
         private string _exchangeName = null;
         private bool _durable;
 
-        private ConcurrentQueue<Packet>
         private Task _dispatcherTask = null;
+        private ConcurrentDictionary<BusChannel, ConcurrentQueue<Packet>> _queues = new ConcurrentDictionary<BusChannel, ConcurrentQueue<Packet>>();
         private ConcurrentDictionary<BusChannel, List<PacketProcessor>> _subscribers = new ConcurrentDictionary<BusChannel, List<PacketProcessor>>();
 
         /// <summary>
@@ -76,6 +76,8 @@ namespace Cactus.Bus.RabbitBus
             if (BindQueue(channel))
             {
                 string channelName = GetChannelName(_exchangeName, channel);
+
+                _queues.TryAdd(channelName, new ConcurrentQueue<Packet>());
 
                 _subscribers.TryAdd(channelName, new List<PacketProcessor>());
                 var subscriber = _subscribers[channelName];
