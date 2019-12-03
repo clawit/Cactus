@@ -9,4 +9,5 @@ message Packet{
 	repeated string Args = 3;
 	string Data = 4;
 	map<string, string> Options = 5;
+	uint64 DeliveryTag = 6; 
 }

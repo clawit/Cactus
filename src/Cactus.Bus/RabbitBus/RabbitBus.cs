@@ -101,9 +101,10 @@ namespace Cactus.Bus.RabbitBus
                 consumer.Received += (sender, args) =>
                 {
                     var packet = args.Body.FromByteArray();
+                    packet.DeliveryTag = args.DeliveryTag;
                     queue.Enqueue(packet);
                 };
-                _channel.BasicConsume(channelName, true, consumer);
+                _channel.BasicConsume(channelName, false, consumer);
 
                 return true;
             }
@@ -160,7 +161,14 @@ namespace Cactus.Bus.RabbitBus
                             queue.TryDequeue(out var packet);
                             foreach (var processor in processors)
                             {
-                                processor(channel, packet);
+                                //回调业务处理方法
+                                bool result = processor(channel, packet);
+
+                                //调用成功则确认
+                                if (result)
+                                {
+                                    rabbitConncetion.Channel.BasicAck(packet.DeliveryTag, false);
+                                }
                             }
                         }
                     }
