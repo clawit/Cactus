@@ -32,9 +32,33 @@ namespace Cactus.Protocol.Model
             return Packet.Parser.ParseFrom(bytes);
         }
 
-        private static Packet FromByteString(this ByteString byteString)
+        public static Packet FromByteString(this ByteString byteString)
         {
             return Packet.Parser.ParseFrom(byteString);
+        }
+
+        public static bool SetOption(this Packet packet, string key, string value)
+        {
+            if (packet == null || string.IsNullOrWhiteSpace(key))
+                return false;
+            else
+            {
+                if (packet.Options.ContainsKey(key))
+                {
+                    packet.Options[key] = value;
+                }
+                else
+                {
+                    packet.Options.Add(key, value);
+                }
+
+                return true;
+            }
+        }
+
+        public static bool TryGetOption(this Packet packet, string key, out string value)
+        {
+            return packet.Options.TryGetValue(key, out value);
         }
     }
 }
