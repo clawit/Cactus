@@ -38,7 +38,7 @@ namespace Cactus.Bus.RabbitBus
             _factory.Uri = conncetionUri;
             _conncetion = _factory.CreateConnection();
             _channel = _conncetion.CreateModel();
-            _channel.BasicQos(0, 1, false);
+            //_channel.BasicQos(0, 1, false);
             //设置类型 Topic
             _channel.ExchangeDeclare(_exchangeName, ExchangeType.Topic);
 
@@ -162,12 +162,16 @@ namespace Cactus.Bus.RabbitBus
                             foreach (var processor in processors)
                             {
                                 //回调业务处理方法
-                                bool result = processor(channel, packet);
+                                bool result = await processor(channel, packet);
 
                                 //调用成功则确认
                                 if (result)
                                 {
                                     rabbitConncetion.Channel.BasicAck(packet.DeliveryTag, false);
+                                }
+                                else
+                                {
+                                    rabbitConncetion.Channel.BasicReject(packet.DeliveryTag, true);
                                 }
                             }
                         }

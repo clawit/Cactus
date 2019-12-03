@@ -49,9 +49,9 @@ namespace BusUnitTest
 
         }
 
-        private bool _processor(BusChannel channel, Packet packet)
+        private async Task<bool> _processor(BusChannel channel, Packet packet)
         {
-            return true;
+            return await Task.FromResult(true);
         }
 
     }

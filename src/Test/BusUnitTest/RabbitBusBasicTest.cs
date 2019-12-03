@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace BusUnitTest
@@ -41,9 +42,9 @@ namespace BusUnitTest
             }
         }
 
-        private bool _processor(BusChannel channel, Packet packet)
+        private async Task<bool> _processor(BusChannel channel, Packet packet)
         {
-            return true;
+            return await Task.FromResult(true);
         }
 
 

@@ -2,10 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Cactus.Protocol.Interface
 {
-    public delegate bool PacketProcessor(BusChannel channel, Packet packet);
+    public delegate Task<bool> PacketProcessor(BusChannel channel, Packet packet);
     public interface IBus
     {
         bool Publish(BusChannel channel, Packet packet);
