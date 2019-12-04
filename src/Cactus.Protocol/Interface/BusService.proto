@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package Cactus.Protocol.Interface;
+option csharp_namespace = "Cactus.Protocol.Interface";
+
+import "Model/Packet.proto";
+import "Model/RequestResult.proto";
+
+// The service definition.
+service BusService {
+  rpc Subscribe (Cactus.Protocol.Model.Packet) returns (Cactus.Protocol.Model.RequestResult);
+  rpc Publish (Cactus.Protocol.Model.Packet) returns (Cactus.Protocol.Model.RequestResult);
+}

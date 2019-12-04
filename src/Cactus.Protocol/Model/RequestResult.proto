@@ -1,0 +1,10 @@
+﻿syntax = "proto3";
+
+package Cactus.Protocol.Model;
+option csharp_namespace = "Cactus.Protocol.Model";
+
+message RequestResult{
+    bool IsOk = 1;
+	int32 Code = 2;
+	string Message = 3;
+}

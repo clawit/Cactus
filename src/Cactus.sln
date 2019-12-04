@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.645
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29519.87
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cactus.Protocol", "Cactus.Protocol\Cactus.Protocol.csproj", "{DD459904-BA2B-4299-90E7-B941BEC60185}"
 EndProject
@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cactus.Bus", "Cactus.Bus\Ca
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{EBA87F65-D7D3-478F-95B9-AD8966386FB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusUnitTest", "Test\BusUnitTest\BusUnitTest.csproj", "{8FA17410-6857-49E4-8338-0F36D7C9E19F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BusUnitTest", "Test\BusUnitTest\BusUnitTest.csproj", "{8FA17410-6857-49E4-8338-0F36D7C9E19F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cactus.Service", "Cactus.Service\Cactus.Service.csproj", "{5AE0BD75-FE3F-4101-B894-78015699F9E2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,6 +31,10 @@ Global
 		{8FA17410-6857-49E4-8338-0F36D7C9E19F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FA17410-6857-49E4-8338-0F36D7C9E19F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FA17410-6857-49E4-8338-0F36D7C9E19F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5AE0BD75-FE3F-4101-B894-78015699F9E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5AE0BD75-FE3F-4101-B894-78015699F9E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5AE0BD75-FE3F-4101-B894-78015699F9E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5AE0BD75-FE3F-4101-B894-78015699F9E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
