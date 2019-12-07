@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Cactus.Fan;
 
 namespace Cactus.Service
 {
@@ -26,6 +27,7 @@ namespace Cactus.Service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddGrpc();
+            services.AddFan("Host=192.168.31.102;Port=5432;DataBase=hangfire;Username=postgres;Password=n8f39gjk2j2rh83r7gv4wfh;Timeout=300");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +51,7 @@ namespace Cactus.Service
 
             //app.UseAuthorization();
 
+            app.UseFan();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<BusGrpcService>();
