@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Cactus.Bus\Cactus.Bus.csproj" />
-    <ProjectReference Include="..\Cactus.Fan\Cactus.Fan.csproj" />
     <ProjectReference Include="..\Cactus.Protocol\Cactus.Protocol.csproj" />
   </ItemGroup>
 

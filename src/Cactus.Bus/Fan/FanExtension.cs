@@ -6,9 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Cactus.Fan
+namespace Cactus.Bus.Fan
 {
-    public static class ServiceExtension
+    public static class FanExtension
     {
         public static IServiceCollection AddFan(this IServiceCollection services, string pgConnector)
         {

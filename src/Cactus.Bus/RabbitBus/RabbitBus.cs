@@ -81,7 +81,6 @@ namespace Cactus.Bus.RabbitBus
 
                 //queue
                 _queues.TryAdd(channelName, new ConcurrentQueue<Packet>());
-                var queue = _queues[channelName];
 
                 //processor
                 List<PacketProcessor> subscriber = null;
@@ -102,7 +101,7 @@ namespace Cactus.Bus.RabbitBus
                 {
                     var packet = args.Body.FromByteArray();
                     packet.SetDeliveryTag(args.DeliveryTag);
-                    queue.Enqueue(packet);
+                    InternalEnqueue(channelName, packet);
                 };
                 _channel.BasicConsume(channelName, false, consumer);
 
@@ -110,6 +109,12 @@ namespace Cactus.Bus.RabbitBus
             }
             else
                 return false;
+        }
+
+        public void InternalEnqueue(string channelName, Packet packet)
+        {
+            var queue = _queues[channelName];
+            queue.Enqueue(packet);
         }
 
         public void Dispose()

@@ -17,8 +17,4 @@
     <None Remove="Model\RequestResult.proto" />
     <Content Include="Interface\BusService.proto" LinkBase="" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Cactus.Fan\Cactus.Fan.csproj" />
-  </ItemGroup>
 </Project>
