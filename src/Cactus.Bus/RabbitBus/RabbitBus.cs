@@ -1,5 +1,7 @@
-﻿using Cactus.Protocol.Interface;
+﻿using Cactus.Bus.Interface;
+using Cactus.Protocol.Interface;
 using Cactus.Protocol.Model;
+using Hangfire;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
@@ -11,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Cactus.Bus.RabbitBus
 {
-    public class RabbitBus : IBus, IDisposable
+    public class RabbitBus : IBusManagerment, IDisposable
     {
         private ConnectionFactory _factory = new ConnectionFactory();
         private IConnection _conncetion = null;
@@ -19,6 +21,7 @@ namespace Cactus.Bus.RabbitBus
         private IBasicProperties _properties = null;
         private string _exchangeName = null;
         private bool _durable;
+        private static RabbitConncetion _rabbitConncetion = null;
 
         private Task _dispatcherTask = null;
         private ConcurrentDictionary<string, ConcurrentQueue<Packet>> _queues = new ConcurrentDictionary<string, ConcurrentQueue<Packet>>();
@@ -46,12 +49,12 @@ namespace Cactus.Bus.RabbitBus
             _properties = _channel.CreateBasicProperties();
             _properties.Persistent = true;
 
-            var rabbitConncetion = new RabbitConncetion();
-            rabbitConncetion.Channel = _channel;
-            rabbitConncetion.Subscribers = _subscribers;
-            rabbitConncetion.ExchangeName = _exchangeName;
-            rabbitConncetion.Queues = _queues;
-            _dispatcherTask = Task.Factory.StartNew(_dispatcher, rabbitConncetion);
+            _rabbitConncetion = new RabbitConncetion();
+            _rabbitConncetion.Channel = _channel;
+            _rabbitConncetion.Subscribers = _subscribers;
+            _rabbitConncetion.ExchangeName = _exchangeName;
+            _rabbitConncetion.Queues = _queues;
+            _dispatcherTask = Task.Factory.StartNew(Dispatch, _rabbitConncetion);
         }
 
         public bool Publish(BusChannel channel, Packet packet)
@@ -81,6 +84,7 @@ namespace Cactus.Bus.RabbitBus
 
                 //queue
                 _queues.TryAdd(channelName, new ConcurrentQueue<Packet>());
+                var queue = _queues[channelName];
 
                 //processor
                 List<PacketProcessor> subscriber = null;
@@ -100,10 +104,9 @@ namespace Cactus.Bus.RabbitBus
                 consumer.Received += (sender, args) =>
                 {
                     var packet = args.Body.FromByteArray();
-                    packet.SetDeliveryTag(args.DeliveryTag);
-                    InternalEnqueue(channelName, packet);
+                    queue.Enqueue(packet);
                 };
-                _channel.BasicConsume(channelName, false, consumer);
+                _channel.BasicConsume(channelName, true, consumer);
 
                 return true;
             }
@@ -111,10 +114,25 @@ namespace Cactus.Bus.RabbitBus
                 return false;
         }
 
-        public void InternalEnqueue(string channelName, Packet packet)
+        public async Task InternalInvoke(string channel, Packet packet)
         {
-            var queue = _queues[channelName];
-            queue.Enqueue(packet);
+            if (packet.TryGetTriggerAt(out var triggrtAt)
+                && triggrtAt > DateTime.Now)
+            {
+                BackgroundJob.Schedule(() => InternalInvoke(channel, packet), DateTime.Now - triggrtAt);
+            }
+            else
+            {
+                var processors = _rabbitConncetion.Subscribers[channel];
+                if (processors != null)
+                {
+                    foreach (var processor in processors)
+                    {
+                        //回调业务处理方法
+                        await processor(channel, packet);
+                    }
+                }
+            }
         }
 
         public void Dispose()
@@ -149,7 +167,7 @@ namespace Cactus.Bus.RabbitBus
             }
         }
 
-        private static async Task _dispatcher(object param)
+        private async Task Dispatch(object param)
         {
             var rabbitConncetion = (RabbitConncetion)param;
             while (true)
@@ -159,27 +177,10 @@ namespace Cactus.Bus.RabbitBus
                     foreach (var channel in rabbitConncetion.Subscribers.Keys)
                     {
                         var queue = rabbitConncetion.Queues[channel];
-                        var processors = rabbitConncetion.Subscribers[channel];
-                        if (queue!= null && processors != null 
-                            && !queue.IsEmpty)
+                        if (queue!= null && !queue.IsEmpty)
                         {
                             queue.TryDequeue(out var packet);
-                            foreach (var processor in processors)
-                            {
-                                //回调业务处理方法
-                                bool result = await processor(channel, packet);
-
-                                packet.TryGetDeliveryTag(out UInt64 deliveryTag);
-                                //调用成功则确认
-                                if (result)
-                                {
-                                    rabbitConncetion.Channel.BasicAck(deliveryTag, false);
-                                }
-                                else
-                                {
-                                    rabbitConncetion.Channel.BasicReject(deliveryTag, true);
-                                }
-                            }
+                            await InternalInvoke(channel, packet);
                         }
                     }
                 }
