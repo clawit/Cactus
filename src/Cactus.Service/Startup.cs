@@ -62,6 +62,25 @@ namespace Cactus.Service
                     await context.Response.WriteAsync("Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
                 });
             });
+
+            //var _bus = new Bus.RabbitBus.RabbitBus(new Uri("amqp://activator:activator@61.160.212.32:35672"), "Cactus.Bus");
+            //_bus.Subscribe("Event", async (c, p) => {
+            //    Console.WriteLine($"Packet Time:{p.Data}");
+            //    Console.WriteLine($"Now:{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")}");
+            //    return await Task.FromResult(true);
+
+            //});
+            //var packet = new Protocol.Model.Packet()
+            //{
+            //    Service = "Output",
+            //    Command = "Print",
+            //    Data = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"),
+            //};
+            //packet.Args.Add(new string[] { "arg1", "arg2" });
+            //packet.Options.Add(new Dictionary<string, string>() { { "opt1", "1" }, { "opt2", "2" } });
+            //packet.Options.Add("TriggerAt", DateTime.Now.AddMinutes(2).ToString("yyyy-MM-dd HH:mm:ss.fff"));
+            //_bus.Publish("Event", packet);
+
         }
     }
 }
